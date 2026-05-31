@@ -1,0 +1,37 @@
+name: Build Debug APK
+
+on:
+  # 1. Запуск вручную с кнопки (самое удобное)
+  workflow_dispatch:
+  # 2. Автоматически при пушах в main
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Ключевой момент для Kotlin: явно указываем Java 17
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Даем права на выполнение gradlew
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      # Собираем DEBUG версию (подпись не требуется)
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      # Загружаем результат
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
